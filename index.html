@@ -155,7 +155,7 @@
 
 <nav class="tabs">
   <button class="activo" data-vista="simulador">Simulador interactivo</button>
-  <button data-vista="explicacion">¿Qué dice el TCL?</button>
+  <button data-vista="explicacion">¿Qué dice el TLC?</button>
   <button data-vista="formulas">Fórmulas principales</button>
 </nav>
 
@@ -268,14 +268,14 @@
       </table>
       <p class="sub" style="margin-top:8px">La identidad DE(X̄) = σ/√n es exacta para la verdadera distribución de la
         media muestral —la que se obtendría promediando todas las muestras posibles de tamaño <em>n</em> (o,
-        equivalentemente, en el límite <em>B</em>→∞)— y no requiere el TCL. En la simulación solo tomamos <em>B</em>
+        equivalentemente, en el límite <em>B</em>→∞)— y no requiere el TLC. En la simulación solo tomamos <em>B</em>
         muestras, así que la “desv. de las medias” que mostramos no es σ/√n exacto, sino una estimación de él: el
         cociente se acerca a 1 cuando <em>B</em> es grande y fluctúa cuando <em>B</em> es pequeño. En todo caso, este
         cociente verifica la fórmula del error estándar; <strong>no</strong> indica si la distribución de medias ya
         es normal.</p>
 
       <h3>Normalidad de las medias muestrales</h3>
-      <p class="sub">Esto sí es lo que mejora al aumentar <em>n</em> y es el contenido del TCL. Se evalúa con la
+      <p class="sub">Esto sí es lo que mejora al aumentar <em>n</em> y es el contenido del TLC. Se evalúa con la
         asimetría y la curtosis de las medias simuladas. La <strong>asimetría</strong> mide si la distribución está
         ladeada: vale 0 cuando es simétrica, es positiva si tiene una cola más larga hacia la derecha y negativa si
         la cola larga está a la izquierda. La <strong>curtosis (en exceso)</strong> compara las colas y el pico con
@@ -310,7 +310,7 @@
         distribución de todas esas medias?</strong></p>
 
       <div class="destacado">
-        El <strong>Teorema del Límite Central (TCL)</strong> afirma que, cuando <em>n</em> es suficientemente grande,
+        El <strong>Teorema del Límite Central (TLC)</strong> afirma que, cuando <em>n</em> es suficientemente grande,
         la distribución de las medias muestrales se aproxima a una <strong>distribución normal</strong>, sin importar
         la forma de la población de origen.
       </div>
@@ -340,7 +340,7 @@
         se vuelve cada vez más simétrica y acampanada.</p>
       </div>
 
-      <h3>Lo que el TCL no dice</h3>
+      <h3>Lo que el TLC no dice</h3>
       <p>El teorema habla de la distribución de la <strong>media muestral</strong>, no de los datos individuales.
         Aumentar <em>n</em> no hace que los datos originales se vuelvan normales; hace que las <em>medias</em> de las
         muestras lo hagan. Y con <em>n</em> pequeño sobre una población muy sesgada, la aproximación normal puede ser
@@ -392,7 +392,7 @@
           <li>El tamaño de muestra <em>n</em> es <strong>suficientemente grande</strong>; cuánto, depende de qué tan
             asimétrica sea la población.</li>
         </ul>
-        <p>Cuando se cumplen, el TCL garantiza la aproximación normal de la media muestral aunque la población de
+        <p>Cuando se cumplen, el TLC garantiza la aproximación normal de la media muestral aunque la población de
           origen no sea normal.</p>
       </div>
     </div>
@@ -708,7 +708,7 @@ function actualizarPanel(medias,pob,n){
   if(dif>0.15){clase='mal';txt='Discrepa';} else if(dif>0.06){clase='alerta';txt='Aproximada';}
   badge.innerHTML='<span class="badge '+clase+'">'+txt+'</span>';
 
-  // --- Normalidad de las MEDIAS (esto es lo que mide el TCL) ---
+  // --- Normalidad de las MEDIAS (esto es lo que mide el TLC) ---
   const skM=asimetria(medias), kuM=curtosisExceso(medias);
   const ng=document.getElementById('normGrid');
   let nClase,nTxt;
@@ -728,7 +728,7 @@ function actualizarPanel(medias,pob,n){
   let msg, tipo;
   if(noNormal){
     tipo='alerta';
-    msg='<strong>El TCL aún no “despega”.</strong> Con <em>n='+n+'</em>, la distribución de las medias todavía '
+    msg='<strong>El TLC aún no “despega”.</strong> Con <em>n='+n+'</em>, la distribución de las medias todavía '
       +'es asimétrica/no normal (asimetría '+skM.toFixed(2)+', curtosis '+kuM.toFixed(2)+'), como se ve en el '
       +'gráfico Q–Q. Note que el error estándar empírico igual coincide con σ/√n —eso ocurre para cualquier '
       +'<em>n</em>—, pero la <em>forma</em> normal todavía no aparece. Aumente <em>n</em> y observe la mejora.';
