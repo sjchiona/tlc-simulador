@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Teorema Central del Límite — Simulador interactivo</title>
+<title>Teorema del Límite Central — Simulador interactivo</title>
 
 <!-- Librerías incrustadas (sin dependencias externas) -->
 <style>
@@ -149,7 +149,7 @@
 <body>
 
 <header class="app">
-  <h1>Teorema Central del Límite</h1>
+  <h1>Teorema del Límite Central</h1>
   <p>Simulador Interactivo del Teorema del Límite Central</p>
 </header>
 
@@ -303,14 +303,14 @@
   <!-- ======================= EXPLICACIÓN ======================= -->
   <section class="vista" id="explicacion">
     <div class="tarjeta prosa">
-      <h2>La intuición del Teorema Central del Límite</h2>
+      <h2>La intuición del Teorema del Límite Central</h2>
       <p>Imagine que toma una población cualquiera —puede ser muy rara: con dos picos, muy sesgada, o nada parecida
         a una campana— y de ella extrae una muestra de tamaño <em>n</em>. Calcula la media de esa muestra y la anota.
         Luego repite el procedimiento muchísimas veces. La pregunta del teorema es: <strong>¿qué forma tiene la
         distribución de todas esas medias?</strong></p>
 
       <div class="destacado">
-        El <strong>Teorema Central del Límite (TCL)</strong> afirma que, cuando <em>n</em> es suficientemente grande,
+        El <strong>Teorema del Límite Central (TCL)</strong> afirma que, cuando <em>n</em> es suficientemente grande,
         la distribución de las medias muestrales se aproxima a una <strong>distribución normal</strong>, sin importar
         la forma de la población de origen.
       </div>
@@ -740,7 +740,7 @@ function actualizarPanel(medias,pob,n){
   } else {
     tipo='ok';
     msg='La distribución de las medias es prácticamente normal (asimetría '+skM.toFixed(2)+', curtosis '
-      +kuM.toFixed(2)+') y el error estándar empírico coincide con σ/√n. El Teorema Central del Límite se '
+      +kuM.toFixed(2)+') y el error estándar empírico coincide con σ/√n. El Teorema del Límite Central se '
       +'manifiesta con claridad, aunque la población de origen '+(skP>0.5?'sea asimétrica':'no sea normal')+'.';
   }
   ver.className='veredicto '+(tipo==='ok'?'ok':'alerta');
