@@ -1,21 +1,21 @@
 # Simulador del Teorema del Límite Central (TLC)
 
-> Aplicación educativa interactiva desarrollada con **Claude (Anthropic)** para el curso de Estadística de la maestría de **CENTRUM PUCP**. Todo el código, los textos y los gráficos se construyeron en una sesión de trabajo con Claude.
+> Aplicación web educativa interactiva desarrollada con **Claude (Anthropic)** para un curso de Estadística de posgrado de una Escuela de Negocios. Todo el código, los textos y los gráficos se construyeron en una sesión de trabajo con Claude.
 
 **App en vivo:** https://sjchiona.github.io/tlc-simulador/
 
 ---
 
-Aplicación web educativa sobre el **Teorema del Límite Central** para uso autónomo de los estudiantes de la maestría (Estadística, CENTRUM PUCP). Pensada para usarse en clase y en celular, y para alojarse en Canvas o en la web.
+Aplicación web educativa sobre el **Teorema del Límite Central** para uso autónomo de los estudiantes. Funciona en computadora y en celular, y puede alojarse en la web o en un aula virtual (LMS).
 
 ## 1. Entregable
 
 Un único archivo **HTML autocontenido** (HTML + CSS + JavaScript), en español, que:
 
 - Abre en Google Chrome y funciona como archivo estático (sin servidor).
-- Se ve bien tanto en **pantalla de computadora** como en **celular** (la presentación se hace pensando en que los asistentes lo abren en su teléfono).
+- Se ve bien tanto en **pantalla de computadora** como en **celular**.
 - Existe en dos versiones equivalentes:
-  - `index.html`: con las librerías incrustadas (sin dependencias externas), usada en GitHub Pages y recomendada para Canvas.
+  - `index.html`: con las librerías incrustadas (sin dependencias externas), usada en GitHub Pages.
   - `TLC_Simulador.html`: con las librerías por CDN.
 
 Librerías: **Chart.js** (gráficos) y **KaTeX** (fórmulas).
@@ -71,19 +71,14 @@ Notación formal en KaTeX: enunciado, μ_X̄ = μ, σ_X̄ = σ/√n, convergenci
 ## 4. Alojamiento
 
 - **GitHub Pages:** https://sjchiona.github.io/tlc-simulador/ (se ejecuta como web normal).
-- **Canvas:** subir `index.html` como archivo y abrirlo en pestaña nueva, o enlazarlo como **URL externa** apuntando a GitHub Pages.
-  - Nota: la *vista previa* de archivos de Canvas no ejecuta JavaScript; por eso conviene abrirlo en pestaña nueva o usar la URL externa.
+- **Aula virtual / LMS:** subir `index.html` como archivo y abrirlo en pestaña nueva, o enlazarlo como **URL externa** apuntando a GitHub Pages.
+  - Nota: la *vista previa* de archivos de algunos LMS no ejecuta JavaScript; por eso conviene abrirlo en pestaña nueva o usar la URL externa.
 
-## 5. Tareas relacionadas
+## 5. Decisiones de diseño relevantes
 
-- **Ponencia (II Jornadas de Innovación Pedagógica):** deck `TLC_ponencia.pptx`, demo-céntrico, con un **código QR** para que el público entre al simulador desde el celular.
-- **Fase 2 (diferida):** chatbot de preguntas sobre el TLC. No puede vivir en el HTML estático con una clave de API embebida (sería insegura); requiere backend o servicio externo. Proyecto aparte.
-
-## 6. Decisiones de diseño relevantes
-
-- Se descartó una base **longitudinal** (PIB per cápita de países a lo largo del tiempo) porque el TLC exige **independencia** de las observaciones; se reemplazó por bases de **corte transversal** (Boston).
+- Se descartó una base **longitudinal** (datos de las mismas unidades a lo largo del tiempo) porque el TLC exige **independencia** de las observaciones; se usaron bases de **corte transversal**.
 - El cociente "desviación de las medias / (σ/√n)" verifica la **fórmula del error estándar** (válida para cualquier `n`) y **no** la normalidad; la normalidad se juzga con el Q–Q y con la asimetría/curtosis de las medias.
-- Muestreo **con reemplazo** y semilla reproducible, replicando el script de R original sobre la base `faithful`.
+- Muestreo **con reemplazo** y semilla reproducible, replicando un script de R original sobre la base `faithful`.
 
 ---
 
