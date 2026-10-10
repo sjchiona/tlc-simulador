@@ -187,7 +187,7 @@
     <div class="tarjeta">
       <h2>Configure la simulación</h2>
       <p class="sub">Elija una población, el tamaño de muestra y el número de repeticiones. En cada repetición se
-        extrae una muestra (con reemplazo), se calcula su media, y al final se grafica la distribución de todas
+        extrae una muestra (con reemplazo, o sin reemplazo si activa el FPC), se calcula su media, y al final se grafica la distribución de todas
         esas medias muestrales.</p>
 
       <div class="controles">
@@ -221,6 +221,14 @@
           <label for="numSemilla">Semilla aleatoria</label>
           <input type="number" id="numSemilla" min="1" step="1" value="123">
           <div class="ayuda">Fije la semilla para reproducir exactamente los mismos resultados.</div>
+        </div>
+
+        <div class="campo" style="grid-column:1/-1">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:600;font-size:.9rem">
+            <input type="checkbox" id="chkFPC" style="width:auto;accent-color:var(--azul)">
+            <span>Población finita: muestrear <strong>sin reemplazo</strong> (aplica el factor de corrección, FPC)</span>
+          </label>
+          <div class="ayuda">Trata la base como la población completa de tamaño N; el error estándar teórico pasa a ser σ/√n × √((N−n)/(N−1)). <span id="fpcAviso"></span></div>
         </div>
 
         <!-- Parámetros de distribuciones sintéticas -->
@@ -277,11 +285,12 @@
       <h3>Error estándar: empírico vs. teórico</h3>
       <table class="cmp">
         <thead><tr><th>Desviación de las medias muestrales</th>
-          <th>σ / √n<br><small>(teórico)</small></th><th>Cociente</th><th>¿Coincide la fórmula?</th></tr></thead>
+          <th id="thTeo">σ / √n<br><small>(teórico)</small></th><th>Cociente</th><th>¿Coincide la fórmula?</th></tr></thead>
         <tbody><tr>
           <td id="eeEmp">—</td><td id="eeTeo">—</td><td id="eeRatio">—</td><td id="eeBadge">—</td>
         </tr></tbody>
       </table>
+      <div class="ayuda" id="fpcNota" style="margin-top:6px"></div>
       <p class="sub" style="margin-top:8px">La identidad DE(X̄) = σ/√n es exacta para la verdadera distribución de la
         media muestral —la que se obtendría promediando todas las muestras posibles de tamaño <em>n</em> (o,
         equivalentemente, en el límite <em>B</em>→∞)— y no requiere el TLC. En la simulación solo tomamos <em>B</em>
@@ -610,18 +619,24 @@ function kde(arr,xs){
    4) MOTOR DE SIMULACIÓN (por lotes, sin congelar el navegador)
    ===================================================================== */
 let simulando=false;
-function simular(pob, n, B, alTerminar){
+function simular(pob, n, B, sinReemplazo, alTerminar){
   fijarSemilla(parseInt(document.getElementById('numSemilla').value)||1);
-  // (re)generamos la población sintética con la misma semilla para coherencia,
-  // y luego reiniciamos la semilla antes de las simulaciones de medias
   const medias=new Float64Array(B);
   let b=0;
   const barra=document.getElementById('barraProgreso'); const relleno=barra.firstElementChild;
   barra.style.display='block';
   const sacar=pob.sacarUno;
+  const datos=pob.valores, N=datos.length;
+  const idx = sinReemplazo ? Uint32Array.from({length:N},(_,i)=>i) : null;
+  function muestraSR(){ // sin reemplazo: Fisher-Yates parcial sobre los índices
+    let s=0;
+    for(let i=0;i<n;i++){ const j=i+((aleatorio()*(N-i))|0); const t=idx[i]; idx[i]=idx[j]; idx[j]=t; s+=datos[idx[i]]; }
+    return s/n;
+  }
   function lote(){
     const fin=Math.min(b+2000,B);
-    for(; b<fin; b++){ let s=0; for(let i=0;i<n;i++) s+=sacar(); medias[b]=s/n; }
+    if(sinReemplazo){ for(; b<fin; b++) medias[b]=muestraSR(); }
+    else { for(; b<fin; b++){ let s=0; for(let i=0;i<n;i++) s+=sacar(); medias[b]=s/n; } }
     relleno.style.width=(100*b/B).toFixed(0)+'%';
     if(b<B){ requestAnimationFrame(lote); }
     else { barra.style.display='none'; relleno.style.width='0'; alTerminar(Array.from(medias)); }
@@ -676,9 +691,9 @@ function dibujarPoblacion(pob){
     ? ('Histograma de una muestra simulada de N = '+N_POB_SINT.toLocaleString('es')+' valores; la curva es su densidad suavizada.')
     : 'Histograma (densidad) y densidad suavizada de los datos.';
 }
-function dibujarMedias(medias,pob,n){
+function dibujarMedias(medias,pob,n,fpc){
   const h=histograma(medias);
-  const sigmaTeo=pob.sigmaPob/Math.sqrt(n);
+  const sigmaTeo=pob.sigmaPob/Math.sqrt(n)*(fpc||1);
   const normal=h.centros.map(x=>dnorm(x,pob.muPob,sigmaTeo));
   const dk=kde(medias,h.centros);
   if(chMedias)chMedias.destroy();
@@ -734,10 +749,17 @@ function opcionesHist(tituloX){
 /* =====================================================================
    6) PANEL DE ESTADÍSTICOS Y TEXTO DIDÁCTICO
    ===================================================================== */
-function actualizarPanel(medias,pob,n){
+function actualizarPanel(medias,pob,n,fpc){
+  fpc=fpc||1;
   const mMedias=media(medias), sMedias=desvMuestral(medias);
-  const eeTeo=pob.sigmaPob/Math.sqrt(n);
-  const ratio=sMedias/eeTeo;
+  const eeTeo=pob.sigmaPob/Math.sqrt(n)*fpc;
+  const ratio= eeTeo>0 ? sMedias/eeTeo : 1;
+  const thTeo=document.getElementById('thTeo'), fpcNota=document.getElementById('fpcNota');
+  if(fpc!==1){
+    const Npob=pob.valores.length;
+    thTeo.innerHTML='σ/√n × FPC<br><small>(teórico, pobl. finita)</small>';
+    fpcNota.innerHTML='Muestreo <strong>sin reemplazo</strong> · N = '+Npob+' · FPC = √((N−n)/(N−1)) = <strong>'+fpc.toFixed(3)+'</strong>. La desviación de las medias ya no coincide con σ/√n, sino con σ/√n × FPC (menor).';
+  } else { thTeo.innerHTML='σ / √n<br><small>(teórico)</small>'; fpcNota.innerHTML=''; }
   const g=document.getElementById('statsGrid');
   g.innerHTML=tarjetaStat('<span class="sym">μ</span> poblacional',fmt(pob.muPob))
     +tarjetaStat('<span class="sym">σ</span> poblacional',fmt(pob.sigmaPob))
@@ -821,6 +843,9 @@ function refrescarControlesPob(){
   const zc=document.getElementById('zonaCSV');
   const desc=document.getElementById('descPob');
   ps.classList.remove('visible'); zc.classList.remove('visible');
+  const _chk=document.getElementById('chkFPC'), _av=document.getElementById('fpcAviso');
+  const _finita = !!DATASETS[sel] || sel==='csv';
+  if(_chk){ _chk.disabled=!_finita; if(!_finita) _chk.checked=false; if(_av) _av.textContent=_finita?'':'Solo aplica a poblaciones finitas (bases de datos o CSV).'; }
   if(DATASETS[sel]){
     const d=DATASETS[sel];
     desc.innerHTML='<strong>'+d.label+'</strong> ('+d.n+' observaciones · '+d.unit+'). '+d.desc;
@@ -896,15 +921,20 @@ function ejecutar(){
   if(typeof Chart==='undefined'){ document.getElementById('avisoCDN').style.display='block'; return; }
   const pob=construirPoblacion();
   if(!pob){ alert('Cargue primero un archivo CSV válido con una columna numérica.'); return; }
-  const n=parseInt(document.getElementById('numN').value)||1;
+  let n=parseInt(document.getElementById('numN').value)||1;
   const B=parseInt(document.getElementById('numB').value)||100;
+  const chk=document.getElementById('chkFPC');
+  const sinReemplazo = !!(chk && chk.checked && pob.tipo==='datos');
+  const N=pob.valores.length;
+  if(sinReemplazo && n>N){ n=N; document.getElementById('numN').value=n; document.getElementById('valN').textContent=n; document.getElementById('rngN').value=Math.min(n,200); }
+  const fpc = (sinReemplazo && N>1) ? Math.sqrt((N-n)/(N-1)) : 1;
   simulando=true;
   const btn=document.getElementById('btnSimular'); btn.disabled=true; btn.textContent='Simulando…';
   dibujarPoblacion(pob);
-  simular(pob,n,B,(medias)=>{
-    dibujarMedias(medias,pob,n);
+  simular(pob,n,B,sinReemplazo,(medias)=>{
+    dibujarMedias(medias,pob,n,fpc);
     dibujarQQ(medias);
-    actualizarPanel(medias,pob,n);
+    actualizarPanel(medias,pob,n,fpc);
     simulando=false; btn.disabled=false; btn.textContent='Ejecutar simulación';
   });
 }
